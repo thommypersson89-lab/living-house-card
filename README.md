@@ -12,7 +12,7 @@ Three houses to choose from: a Swedish villa, an American ranch house and a town
 | ![A clear night with the moon](docs/night.png) | ![The ranch house on a snowy night](docs/ranch-snow.png) | ![Rain, with umbrellas](docs/rain.png) |
 | ![Christmas Eve at the villa](docs/christmas.png) | ![Fourth of July fireworks](docs/fourth-of-july.png) | ![St. Patrick's Day at the townhouse](docs/st-patricks.png) |
 
-Everything is drawn live in the browser as SVG from your Home Assistant state: there are no image files and no extra sensors to set up. One JavaScript file of about 135 kB.
+Everything is drawn live in the browser as SVG from your Home Assistant state. There are no image files, and the only thing it needs is a weather entity: everything else is optional and switches on when you point it at something you already have. See [What you need](#what-you-need). One JavaScript file of about 135 kB.
 
 **Try it first:** the [demo page](https://thommypersson89-lab.github.io/living-house-card/) has a time machine (fast-forward a day or a year, change the weather) and a configurator that writes the YAML for your house.
 
@@ -50,6 +50,29 @@ Everything is drawn live in the browser as SVG from your Home Assistant state: t
 - Deer at dawn, an owl at night, a hedgehog on mild nights, a hare in winter, a squirrel in autumn, birds, butterflies and fireflies
 - One blocky figure in the garden for each player on your Minecraft server
 
+## What you need
+
+**Only `weather` is required.** With nothing else the card already shows the sun, moon, sky, clouds, rain, snow, wind, seasons, holidays, wildlife and the street lamp. Everything below is optional: leave it out and that part is simply not drawn.
+
+| Feature | Needs | |
+|---|---|---|
+| Sun, moon, stars, light through the day, seasons, holidays, wildlife | Nothing (`sun.sun` and your home location, which every install has) | Out of the box |
+| Clouds, rain, snow, fog, thunder, swaying trees | `weather` | Out of the box |
+| People by the door, silhouettes at night | `people:` your `person.*` entities | An entity you probably have |
+| Glowing windows, tap to toggle | `rooms:` your `light.*` entities | An entity you probably have |
+| Music notes, TV flicker | `media_player.*` entities in `rooms:` / `music:` | An entity you probably have |
+| Chimney smoke | `power:` a power sensor (W or kW) | An entity you may have |
+| Mailbox flag, birthdays | `calendar:` / `birthdays:` a calendar | An entity you may have |
+| Soap bubbles, clothesline | `washer:` a washing machine sensor | An entity you may have |
+| Indoor temperature in the label | `indoor:` temperature and humidity sensors | An entity you may have |
+| Northern lights | `aurora:` an aurora chance sensor (e.g. the Aurora integration) | Optional integration |
+| Minecraft players in the garden | `minecraft:` a player count sensor | Optional integration |
+| "Rain in 40 min" and a dark rain front | `helpers: rain_soon` | [Ready-made helper](examples/living-house-helpers.yaml) |
+| Four rain strengths instead of one | `helpers: rain_now` | [Ready-made helper](examples/living-house-helpers.yaml) |
+| Rainbow, puddles and snow that survive a page reload | `helpers: rained_recently`, `snow_on_ground` | [Ready-made helper](examples/living-house-helpers.yaml) (without it the card remembers while the page is open) |
+
+The helper file [`examples/living-house-helpers.yaml`](examples/living-house-helpers.yaml) is a Home Assistant package with all four template sensors, built on your weather entity's hourly forecast. Put it in `config/packages/`, replace `weather.home` with your weather entity, restart, and add the `helpers:` lines from the top of the file to the card.
+
 ## Installation
 
 ### HACS (custom repository)
@@ -65,7 +88,7 @@ HACS installs the file attached to the latest [release](../../releases).
 ### Manual
 
 1. Download `dist/living-house-card.js` and copy it to `config/www/` on your Home Assistant server.
-2. Go to **Settings → Dashboards → ⋮ → Resources → Add resource**, enter `/local/living-house-card.js?v=0.1.0` and choose **JavaScript module**. Raise `?v=` whenever you replace the file.
+2. Go to **Settings → Dashboards → ⋮ → Resources → Add resource**, enter `/local/living-house-card.js?v=0.1.1` and choose **JavaScript module**. Raise `?v=` whenever you replace the file.
 3. Reload your browser.
 
 ## Quick start
@@ -184,7 +207,7 @@ Each house has its own windows; see [Houses](#houses).
 
 ### Helpers
 
-The card works everything out by itself, but you can point it at your own sensors instead:
+The card works everything out by itself, but you can point it at your own sensors instead. [`examples/living-house-helpers.yaml`](examples/living-house-helpers.yaml) has ready-made template sensors for `rain_now`, `rain_soon`, `rained_recently` and `snow_on_ground`.
 
 | Helper | What it is |
 |---|---|

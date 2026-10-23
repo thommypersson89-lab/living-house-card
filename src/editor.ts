@@ -70,7 +70,7 @@ export class LivingHouseCardEditor extends LitElement {
     return html`
       <ha-form .hass=${this.hass} .data=${this._config} .schema=${SCHEMA} .computeLabel=${(s: { name: string }) => LABELS[s.name] ?? s.name}
         @value-changed=${this._changed}></ha-form>
-      <p style="opacity:.7;font-size:.9em">People, rooms (windows, lights, music, TV) and colours are set in the YAML editor. See the README.</p>`;
+      <p style="opacity:.7;font-size:.9em"><b>Only weather is required. Everything else is optional.</b> People, rooms (windows, lights, music, TV) and colours are set in the YAML editor. See the README.</p>`;
   }
 
   private _changed(ev: CustomEvent): void {

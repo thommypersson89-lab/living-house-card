@@ -1,0 +1,83 @@
+# Optional helper sensors for the Living House Card.
+#
+# The card works without these. They add:
+#   - "Rain in 40 min" and a dark rain front (sensor.living_house_rain_soon)
+#   - four rain strengths from the forecast's millimetres (sensor.living_house_rain_now)
+#   - a rainbow and puddles for two hours after rain, even after a reload (binary_sensor.living_house_rained_recently)
+#   - white ground, snow on the roof and a snowman for a day after it snowed (binary_sensor.living_house_snow_on_ground)
+#
+# How to use:
+#   1. Put this file in config/packages/ (with `homeassistant: packages: !include_dir_named packages`
+#      in configuration.yaml), or paste the `template:` part into your own template configuration.
+#   2. Replace every weather.home with your weather entity. It needs an hourly forecast
+#      (Met.no, Open-Meteo, OpenWeatherMap, NWS and most others have one).
+#   3. Restart Home Assistant, then add to the card:
+#
+#      helpers:
+#        rain_now: sensor.living_house_rain_now
+#        rain_soon: sensor.living_house_rain_soon
+#        rained_recently: binary_sensor.living_house_rained_recently
+#        snow_on_ground: binary_sensor.living_house_snow_on_ground
+
+template:
+  # Rain this hour (mm) and minutes until rain, from the hourly forecast, every 10 minutes
+  - triggers:
+      - trigger: homeassistant
+        event: start
+      - trigger: event
+        event_type: event_template_reloaded
+      - trigger: time_pattern
+        minutes: "/10"
+    actions:
+      - action: weather.get_forecasts
+        target:
+          entity_id: weather.home
+        data:
+          type: hourly
+        response_variable: forecast
+    sensor:
+      - name: "Living House rain now"
+        unique_id: living_house_rain_now
+        icon: mdi:weather-rainy
+        unit_of_measurement: "mm"
+        state: >-
+          {% set inches = state_attr('weather.home', 'precipitation_unit') == 'in' %}
+          {% set ns = namespace(mm=0) %}
+          {% for f in forecast['weather.home'].forecast %}
+            {% set t = as_datetime(f.datetime) %}
+            {% if t <= now() < t + timedelta(hours=1) %}
+              {% set ns.mm = (f.precipitation | float(0)) * (25.4 if inches else 1) %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.mm | round(1) }}
+      - name: "Living House rain soon"
+        unique_id: living_house_rain_soon
+        icon: mdi:weather-pouring
+        # minutes until rain within two hours (rounded to 5), "soon" within 10 minutes, or "no"
+        state: >-
+          {% set inches = state_attr('weather.home', 'precipitation_unit') == 'in' %}
+          {% set ns = namespace(min=none) %}
+          {% for f in forecast['weather.home'].forecast %}
+            {% set t = as_datetime(f.datetime) %}
+            {% set mm = (f.precipitation | float(0)) * (25.4 if inches else 1) %}
+            {% if ns.min is none and t + timedelta(hours=1) > now() and t < now() + timedelta(hours=2)
+                  and (mm >= 0.2 or f.precipitation_probability | float(0) >= 70) %}
+              {% set ns.min = [((t - now()).total_seconds() / 60) | round(0) | int, 0] | max %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.min is none or states('weather.home') in ['rainy', 'pouring', 'lightning-rainy', 'snowy-rainy', 'hail', 'snowy'] %}no
+          {% elif ns.min < 10 %}soon{% else %}{{ (ns.min / 5) | round(0) | int * 5 }}{% endif %}
+
+  - binary_sensor:
+      # It has rained in the last two hours: rainbow and puddles
+      - name: "Living House rained recently"
+        unique_id: living_house_rained_recently
+        icon: mdi:weather-rainy
+        delay_off: "02:00:00"
+        state: "{{ states('weather.home') in ['rainy', 'pouring', 'lightning-rainy', 'snowy-rainy', 'hail'] }}"
+      # It has snowed in the last day: white ground, snow on the roof and a snowman (the card also checks it is below +3 °C)
+      - name: "Living House snow on ground"
+        unique_id: living_house_snow_on_ground
+        icon: mdi:snowflake
+        delay_off: "24:00:00"
+        state: "{{ states('weather.home') in ['snowy', 'snowy-rainy'] }}"
