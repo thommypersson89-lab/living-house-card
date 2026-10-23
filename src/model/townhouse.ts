@@ -94,6 +94,7 @@ export const TOWNHOUSE: HouseModel = {
   id: 'townhouse',
   name: 'Townhouse',
   center: [435, 322],
+  palette: { wall: '#c98f6e', roof: '#3d4248', door: '#2f5d50' },
   scale: 1.3,
   outline: '<rect x="296" y="214" width="278" height="108"/><polygon points="290,216 337,178 384,216"/><polygon points="486,216 533,178 580,216"/>' +
     '<polygon points="372,211 435,160 498,211 492,322 378,322"/><rect x="460" y="163" width="16" height="30"/>',

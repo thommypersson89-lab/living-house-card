@@ -87,6 +87,7 @@ export const VILLA: HouseModel = {
   id: 'villa',
   name: 'Swedish villa',
   center: [435, 322],
+  palette: { wall: '#eef2f5', roof: '#2b333b', door: '#5a6f80' },
   scale: 1.3,
   outline: '<rect x="320" y="244" width="140" height="78"/><polygon points="310,248 390,188 470,248"/>' +
     '<polygon points="390,190 482,168 560,226 468,248"/><polygon points="460,244 552,222 552,308 460,322"/>' +

@@ -1,0 +1,43 @@
+# Publishes the demo page (time machine, configurator and test scenes) to GitHub Pages.
+# Needs Settings → Pages → Source: GitHub Actions. Runs on every release and by hand.
+name: Demo page
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Put the demo page together
+        run: |
+          mkdir -p site
+          cp -r demo/index.html demo/build site/
+          cp dist/living-house-card.js site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

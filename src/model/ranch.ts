@@ -95,6 +95,7 @@ export const RANCH: HouseModel = {
   id: 'ranch',
   name: 'American ranch house',
   center: [435, 322],
+  palette: { wall: '#e3e8ea', roof: '#4a4e55', door: '#a33a32' },
   scale: 1.3,
   outline: '<rect x="300" y="272" width="256" height="50"/><polygon points="556,272 584,263 584,313 556,322"/>' +
     '<polygon points="288,274 568,274 522,232 330,232"/><polygon points="568,274 596,264 522,232"/>' +

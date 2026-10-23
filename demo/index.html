@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
-  <title>Living House Card – time machine</title>
+  <title>Living House Card</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
   <style>
   /* Layout: the card on top as a stage, the controls as a panel below, a gallery of test scenes last */
@@ -27,10 +27,6 @@
   ha-card { display: block; border-radius: 14px; overflow: hidden; max-width: 100%; }
   #machine { box-shadow: 0 10px 30px -18px rgba(0,0,0,.6); border-radius: 14px; }
   #when { color: var(--accent); font-weight: 700; min-height: 1.5em; font-variant-numeric: tabular-nums; }
-  #controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px 20px; background: var(--panel); border: 1px solid var(--line); padding: 16px; border-radius: 14px; }
-  #controls label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: .85rem; letter-spacing: .02em; min-width: 0; }
-  #controls .row { flex-direction: row; align-items: center; gap: 8px; color: var(--fg); font-size: .95rem; letter-spacing: 0; }
-  #controls .wide { grid-column: 1 / -1; }
   input[type=range] { width: 100%; accent-color: var(--accent); }
   input[type=checkbox] { accent-color: var(--accent); width: 18px; height: 18px; }
   button, select { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; font: inherit; }
@@ -44,33 +40,91 @@
   body.single main > :not(#single) { display: none; }
   body.single main { max-width: none; padding: 0; display: block; }
   body.single #single { width: 800px; }
-</style>
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 14px; align-items: start; }
+  .panel { background: var(--panel); border: 1px solid var(--line); padding: 16px; border-radius: 14px; display: grid; gap: 12px; min-width: 0; }
+  .panel h2 { margin: 0; font-size: 1.1rem; }
+  .panel .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 14px; }
+  .panel label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: .85rem; letter-spacing: .02em; min-width: 0; }
+  .panel .row { flex-direction: row; align-items: center; gap: 8px; color: var(--fg); font-size: .95rem; letter-spacing: 0; }
+  .panel input[type=text] { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font: inherit; min-width: 0; width: 100%; }
+  .panel input[type=color] { width: 100%; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 2px; }
+  .person, .window { display: grid; grid-template-columns: 1.2fr 1.6fr 44px 44px auto auto; gap: 8px; align-items: center; }
+  .window { grid-template-columns: 110px 1fr auto; }
+  .person input[type=color] { height: 30px; }
+  .sub { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+  pre#yaml { margin: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow-x: auto; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; max-height: 420px; }
+  .yamlbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #copied { color: var(--accent); font-weight: 700; }
+  @media (max-width: 520px) { .person { grid-template-columns: 1fr 1fr; } }
+  </style>
 </head>
 <body>
 <main>
   <div id="single"></div>
   <h1>Living House Card</h1>
-  <p class="lede">The card with made-up values instead of Home Assistant. Drag the sliders to fast-forward through the day, the year and the weather. The sun is calculated for southern Sweden.</p>
+  <p class="lede">A Home Assistant card that draws your house live. Here it runs on made-up values: fast-forward through the day, the year and the weather, then set up your own house and copy the YAML.</p>
   <div id="machine"></div>
   <div id="when" aria-live="polite"></div>
-  <div id="controls">
-    <label class="wide">Day of the year <input id="day" type="range" min="0" max="364" step="1"></label>
-    <label class="wide">Time of day <input id="minute" type="range" min="0" max="1439" step="1"></label>
-    <label class="row"><button id="play" type="button">▶ Play</button>
-      <select id="speed" aria-label="Speed"><option value="day">a day in 24 s</option><option value="year">a year in 60 s</option></select></label>
-    <label>House <select id="house"><option value="villa">Swedish villa</option></select></label>
-    <label>Weather
-      <select id="weather">
-        <option value="sunny">sunny</option><option value="partlycloudy" selected>partly cloudy</option><option value="cloudy">cloudy</option><option value="fog">fog</option>
-        <option value="rainy">rain</option><option value="pouring">pouring</option><option value="lightning">thunder</option><option value="lightning-rainy">thunderstorm</option>
-        <option value="snowy">snow</option><option value="snowy-rainy">sleet</option><option value="hail">hail</option><option value="windy">windy</option><option value="windy-variant">windy and cloudy</option><option value="exceptional">severe weather</option>
-      </select></label>
-    <label class="row"><button id="random" type="button">🎲 Random weather</button></label>
-    <label>Cloud cover % <input id="cover" type="range" min="0" max="100" value="40"></label>
-    <label>Temperature °C <input id="temp" type="range" min="-15" max="32" value="11"></label>
-    <label>Wind m/s <input id="wind" type="range" min="0" max="20" step=".5" value="4"></label>
-    <label>Wind blows <select id="bearing"><option value="270">to the left</option><option value="90">to the right</option></select></label>
-    <label>Power W <input id="power" type="range" min="0" max="4000" step="50" value="300"></label>
+  <div class="grid2">
+    <section class="panel" id="controls" aria-label="Time machine">
+      <h2>Time machine</h2>
+      <label>Day of the year <input id="day" type="range" min="0" max="364" step="1"></label>
+      <label>Time of day <input id="minute" type="range" min="0" max="1439" step="1"></label>
+      <div class="fields">
+        <label class="row"><button id="play" type="button">▶ Play</button></label>
+        <label>Speed <select id="speed"><option value="day">a day in 24 s</option><option value="year">a year in 60 s</option></select></label>
+        <label>Weather
+          <select id="weather">
+            <option value="sunny">sunny</option><option value="partlycloudy" selected>partly cloudy</option><option value="cloudy">cloudy</option><option value="fog">fog</option>
+            <option value="rainy">rain</option><option value="pouring">pouring</option><option value="lightning">thunder</option><option value="lightning-rainy">thunderstorm</option>
+            <option value="snowy">snow</option><option value="snowy-rainy">sleet</option><option value="hail">hail</option><option value="windy">windy</option><option value="windy-variant">windy and cloudy</option><option value="exceptional">severe weather</option>
+          </select></label>
+        <label class="row"><button id="random" type="button">🎲 Random weather</button></label>
+        <label>Cloud cover % <input id="cover" type="range" min="0" max="100" value="40"></label>
+        <label>Temperature °C <input id="temp" type="range" min="-15" max="32" value="11"></label>
+        <label>Wind m/s <input id="wind" type="range" min="0" max="20" step=".5" value="4"></label>
+        <label>Wind blows <select id="bearing"><option value="270">to the left</option><option value="90">to the right</option></select></label>
+        <label>Power W <input id="power" type="range" min="0" max="4000" step="50" value="300"></label>
+        <label>Aurora chance % <input id="aurora" type="range" min="0" max="100" value="0"></label>
+        <label>Minecraft players <input id="mc" type="range" min="0" max="3" value="0"></label>
+        <label>Lamp colour
+          <select id="lamp"><option value="k2700">warm</option><option value="k3500">neutral</option><option value="k5000">cool</option>
+            <option value="5">red</option><option value="28">orange</option><option value="120">green</option><option value="220">blue</option><option value="270">purple</option><option value="320">pink</option></select></label>
+      </div>
+      <div class="checks">
+        <label class="row"><input id="tv" type="checkbox"> TV</label>
+        <label class="row"><input id="music" type="checkbox"> Music on the porch</label>
+        <label class="row"><input id="washer" type="checkbox"> Washing machine</label>
+        <label class="row"><input id="birthday" type="checkbox"> Birthday</label>
+        <label class="row"><input id="calendar" type="checkbox"> Something in the calendar</label>
+        <label class="row"><input id="still" type="checkbox"> Reduce motion</label>
+      </div>
+    </section>
+    <section class="panel" id="config" aria-label="Your house">
+      <h2>Your house</h2>
+      <div class="fields">
+        <label>House <select id="house"></select></label>
+        <label>Holidays <select id="country"><option value="se">Sweden</option><option value="us">United States</option><option value="none">none</option></select></label>
+        <label>Labels <select id="language"><option value="en">English</option><option value="sv">Svenska</option></select></label>
+        <label>Weather entity <input id="weather_entity" type="text" value="weather.home" spellcheck="false"></label>
+        <label>Walls <input id="c_wall" type="color"></label>
+        <label>Roof <input id="c_roof" type="color"></label>
+        <label>Door <input id="c_door" type="color"></label>
+        <label class="row"><button id="reset_colors" type="button">Default colours</button></label>
+      </div>
+      <div class="sub">People (name, entity, jacket, hair, long hair, home)</div>
+      <div id="people"></div>
+      <label class="row"><button id="add_person" type="button">Add a person</button></label>
+      <div class="sub">Windows (light that colours them)</div>
+      <div id="windows"></div>
+      <div class="yamlbar"><button id="copy" type="button">Copy YAML</button><span id="copied" aria-live="polite"></span></div>
+      <pre id="yaml"></pre>
+    </section>
+  </div>
+  <h2>Test scenes</h2>
+  <p class="lede">The scenes the visual tests compare pixel by pixel.</p>
+  <div id="gallery"></div>
+0" max="4000" step="50" value="300"></label>
     <label>Aurora chance % <input id="aurora" type="range" min="0" max="100" value="0"></label>
     <label>Minecraft players <input id="mc" type="range" min="0" max="3" value="0"></label>
     <label>Lamp colour

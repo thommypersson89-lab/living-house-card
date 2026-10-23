@@ -27,6 +27,8 @@ export interface HouseModel {
   name: string;
   center: Point;
   scale: number;
+  /** the default colours (what `colors` overrides) */
+  palette: { wall: string; roof: string; door: string };
   /** silhouette of the whole house (used for masks) */
   outline: string;
   /** side wall and roof silhouettes, tinted by the golden hour */

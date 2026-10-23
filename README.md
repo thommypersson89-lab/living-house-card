@@ -2,12 +2,19 @@
 
 A Home Assistant card that draws your house as a living picture. The sun and moon follow their real paths, the weather comes from your forecast, the windows glow in the colour of your lamps, and holidays and wildlife show up on their own.
 
+![A day at the house, from before dawn to late evening, with a shower in the afternoon](docs/timelapse.gif)
+
+Three houses to choose from: a Swedish villa, an American ranch house and a townhouse.
+
 | | | |
 |---|---|---|
-| ![A partly cloudy autumn day](docs/day.png) | ![A clear autumn night with the moon](docs/night.png) | ![Snow on the ground and the roof](docs/snow.png) |
-| ![Rain, with umbrellas](docs/rain.png) | ![Christmas Eve](docs/christmas.png) | ![Midsummer](docs/midsummer.png) |
+| ![The Swedish villa on an autumn day](docs/day.png) | ![The ranch house with the mailbox flag up](docs/ranch.png) | ![The townhouse in the evening, music and a purple lamp upstairs](docs/townhouse.png) |
+| ![A clear night with the moon](docs/night.png) | ![The ranch house on a snowy night](docs/ranch-snow.png) | ![Rain, with umbrellas](docs/rain.png) |
+| ![Christmas Eve at the villa](docs/christmas.png) | ![Fourth of July fireworks](docs/fourth-of-july.png) | ![St. Patrick's Day at the townhouse](docs/st-patricks.png) |
 
-Everything is drawn live in the browser as SVG from your Home Assistant state: there are no image files and no extra sensors to set up. One JavaScript file of about 120 kB.
+Everything is drawn live in the browser as SVG from your Home Assistant state: there are no image files and no extra sensors to set up. One JavaScript file of about 135 kB.
+
+**Try it first:** the [demo page](https://thommypersson89-lab.github.io/living-house-card/) has a time machine (fast-forward a day or a year, change the weather) and a configurator that writes the YAML for your house.
 
 > **Provided as is.** This is a hobby project shared in case it is useful to someone. There is no personal support, and issues may not get a response. Use the Discussions tab to help each other. Pull requests that keep the tests green are welcome.
 
@@ -38,6 +45,7 @@ Everything is drawn live in the browser as SVG from your Home Assistant state: t
 
 **Holidays and wildlife**
 - Sweden: Advent lights, Lucia, a Christmas tree, Santa, semla day, Easter twigs, a Walpurgis bonfire, a midsummer pole, a crayfish party, St. Martin's goose, Halloween pumpkins, New Year fireworks, flag days and more
+- United States: holiday lights and a tree from the day after Thanksgiving, Santa on Christmas Eve and Christmas Day, Thanksgiving pie, the Fourth of July with flag, bunting and evening fireworks, flags on Memorial, Flag, Labor and Veterans Day, St. Patrick's Day, Easter eggs, Halloween from mid-October
 - Balloons and a flag on birthdays, a cake on name days, popcorn on Friday nights
 - Deer at dawn, an owl at night, a hedgehog on mild nights, a hare in winter, a squirrel in autumn, birds, butterflies and fireflies
 - One blocky figure in the garden for each player on your Minecraft server
@@ -45,6 +53,9 @@ Everything is drawn live in the browser as SVG from your Home Assistant state: t
 ## Installation
 
 ### HACS (custom repository)
+
+HACS installs the file attached to the latest [release](../../releases).
+
 
 1. In Home Assistant, open **HACS → ⋮ → Custom repositories**.
 2. Add `https://github.com/thommypersson89-lab/living-house-card` with the category **Dashboard**.
@@ -102,8 +113,9 @@ The visual editor covers the simple options. People, rooms and colours are set i
 | Option | Description |
 |---|---|
 | `weather` (required) | A weather entity. The card uses its state, `cloud_coverage`, `temperature`, `wind_speed` and `wind_bearing`. Fahrenheit, km/h, mph and knots are converted. |
-| `house` | The house model. Today: `villa`. |
-| `country` | Which holidays show up: `se` (Sweden, the default) or `none`. |
+| `house` | The house model: `villa` (default), `ranch` or `townhouse`. See [Houses](#houses). |
+| `country` | Which holidays show up: `se` (Sweden, the default), `us` (United States) or `none`. |
+| `flag` | The flag on flag days and birthdays: `se` or `us` (defaults to the country's). |
 | `language` | Label language: `en` or `sv`. Defaults to your Home Assistant language. |
 | `colors` | House colours: `wall`, `side`, `roof`, `door`, `curtains` (hex). |
 | `people` | A list of people. See [People](#people). |
@@ -158,7 +170,17 @@ rooms:
     tv: media_player.living_room_tv
 ```
 
-The villa's windows are `front` (the two windows on the front), `side_left` and `side_right` (the side wall) and `gable` (the small window under the roof).
+Each house has its own windows; see [Houses](#houses).
+
+### Houses
+
+| House | Windows | Notes |
+|---|---|---|
+| `villa` | `front` (the two front windows), `side_left`, `side_right` (the side wall), `gable` (under the roof) | A Swedish one-and-a-half-storey house with solar panels. |
+| `ranch` | `front` (two windows left of the porch), `front_right`, `side` | One storey, a covered porch, an attached garage and a driveway. |
+| `townhouse` | `front` (downstairs), `upstairs` (two windows), `attic` | Two storeys between two neighbouring houses, window boxes and a stoop. People are seen upstairs at night. |
+
+`colors` changes the walls, roof and door of any of them. Music notes can rise from any window, from the `door` or from the `roof`.
 
 ### Helpers
 
@@ -174,7 +196,7 @@ The card works everything out by itself, but you can point it at your own sensor
 | `rained_recently` | A binary sensor for the rainbow and puddles. Otherwise the card remembers the last two hours while the page is open. |
 | `snow_on_ground` | A binary sensor for white ground and snow on the roof. Otherwise the card remembers the last day while the page is open. |
 | `aurora_visible` | A binary sensor instead of `aurora`. |
-| `holiday` | A sensor whose state is a holiday id (`christmas_eve`, `lucia`, `valentines`, `shrove_tuesday`, `waffle_day`, `walpurgis`, `mothers_day`, `national_day`, `crayfish_party`, `cinnamon_bun_day`, `martinmas`, `fathers_day`, `name_day`). |
+| `holiday` | A sensor whose state is a holiday id. Sweden: `christmas_eve`, `lucia`, `valentines`, `shrove_tuesday`, `waffle_day`, `walpurgis`, `mothers_day`, `national_day`, `crayfish_party`, `cinnamon_bun_day`, `martinmas`, `fathers_day`. US: `christmas_eve`, `christmas_day`, `valentines`, `st_patricks`, `mothers_day`, `memorial_day`, `flag_day`, `fathers_day`, `independence_day`, `labor_day`, `veterans_day`, `thanksgiving`. Both: `name_day`. |
 
 ## FAQ
 
@@ -184,13 +206,9 @@ The card works everything out by itself, but you can point it at your own sensor
 
 **The clouds don't match the sky outside.** The card uses the weather entity's `cloud_coverage`. Integrations without it get a guess from the weather state.
 
-**Can it look like my house?** Not yet. More house models are planned; see the roadmap.
+**Can it look like my house?** Pick the closest of the three houses and set its colours. Drawing your own house means adding a house model in `src/model/` (see Development).
 
-## Roadmap
-
-- More house models: an American suburban house and a townhouse
-- US holidays and a `country: us` option
-- A configurator page with a live preview and a "copy YAML" button
+**My country isn't there.** Use `country: none` and, if you like, a `holiday` helper sensor that names today's holiday. Pull requests with another country's holidays are welcome.
 
 ## Development
 
@@ -199,16 +217,18 @@ npm ci
 npm run build        # dist/living-house-card.js and the demo
 npm run serve        # http://localhost:8765/demo/ — the time machine and every test scene
 npx playwright install chromium
-npm test             # visual tests of 28 scenes + logic tests
+npm test             # visual tests of 40 scenes, the configurator and the logic
 ```
 
-- `src/model/` – house models: the drawing of a house plus the anchor points everything else is placed from
+- `src/model/` – house models: the drawing of a house plus the anchor points everything else is placed from (windows, door, chimney, eaves, where people stand, where decorations go). A new house is one file there plus a line in `src/model/index.ts`.
 - `src/draw/` – the landscape, sky, weather, house overlays and decorations
 - `src/derive.ts` – Home Assistant state to a scene
 - `src/compose.ts` – a scene to layers, back to front
 - `src/living-house-card.ts` – the card: cross-fades, freezing, tap areas and labels
 
 If you change how something looks on purpose, run `npm run test:update`, check the new pictures in `tests/__screenshots__/` and commit them.
+
+Releases: bump `version` in `package.json`, commit, and push a tag like `v0.2.0`. The release workflow attaches `living-house-card.js` to a GitHub release, and the demo page is published to GitHub Pages. `scripts/record-frames.mjs` and `scripts/make-gif.py` make the time-lapse GIF.
 
 ## Credits
 
