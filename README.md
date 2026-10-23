@@ -228,7 +228,7 @@ npm test             # visual tests of 40 scenes, the configurator and the logic
 
 If you change how something looks on purpose, run `npm run test:update`, check the new pictures in `tests/__screenshots__/` and commit them.
 
-Releases: bump `version` in `package.json`, commit, and push a tag like `v0.2.0`. The release workflow attaches `living-house-card.js` to a GitHub release, and the demo page is published to GitHub Pages. `scripts/record-frames.mjs` and `scripts/make-gif.py` make the time-lapse GIF.
+Releases: bump `version` in `package.json`, commit, and either push a tag like `v0.2.0` or run the **Release** workflow by hand (it tags `main` with the version). The release workflow attaches `living-house-card.js` to a GitHub release, and the demo page is published to GitHub Pages. `scripts/record-frames.mjs` and `scripts/make-gif.py` make the time-lapse GIF.
 
 ## Credits
 

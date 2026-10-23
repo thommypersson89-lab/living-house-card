@@ -1,9 +1,12 @@
-# Push a tag like v0.2.0 to make a GitHub release with living-house-card.js attached (HACS installs from releases).
+# Makes a GitHub release with living-house-card.js attached (HACS installs from releases).
+# Either push a tag like v0.2.0, or run this workflow by hand: it then tags the current main
+# with the version in package.json.
 name: Release
 
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -20,9 +23,17 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build
-      - name: The tag matches package.json
-        run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
+      - name: Work out the tag
+        id: tag
+        run: |
+          v="v$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "$v" ]; then
+            echo "The tag ${GITHUB_REF_NAME} does not match package.json ($v)"; exit 1
+          fi
+          echo "name=$v" >> "$GITHUB_OUTPUT"
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          target_commitish: ${{ github.sha }}
           files: dist/living-house-card.js
           generate_release_notes: true
