@@ -176,12 +176,14 @@ export function derive(hass: Hass, cfg: LivingHouseConfig, opt: DeriveOptions = 
   const b = num(wa.wind_bearing, 270);
   const wdir: 1 | -1 = -Math.sin((((b + 180) % 360) * Math.PI) / 180) < 0 ? -1 : 1;
 
+  // colours from the config are written straight into the SVG, so only hex colours are let through
+  const hex = (c?: string): string | undefined => (typeof c === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c) ? c : undefined);
   const people: PersonState[] = (cfg.people ?? []).map((p, index) => {
     const base = LOOKS[index % LOOKS.length];
     const l = p.look ?? {};
     const look: PersonLook = {
       ...base,
-      jacket: l.jacket ?? base.jacket, hair: l.hair ?? base.hair, hat: l.hat ?? base.hat, umbrella: l.umbrella ?? base.umbrella,
+      jacket: hex(l.jacket) ?? base.jacket, hair: hex(l.hair) ?? base.hair, hat: hex(l.hat) ?? base.hat, umbrella: hex(l.umbrella) ?? base.umbrella,
       longHair: l.long_hair ?? base.longHair,
     };
     return { name: p.name, index, entity: p.entity, x: 0, home: S[p.entity]?.state === 'home', look };

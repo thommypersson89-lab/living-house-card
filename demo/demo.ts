@@ -84,12 +84,14 @@ function timeMachine(): void {
     box.replaceChildren(...people.map((p, i) => {
       const row = document.createElement('div');
       row.className = 'person';
-      row.innerHTML = `<input type="text" aria-label="Name" value="${p.name}"><input type="text" aria-label="Entity" value="${p.entity}" spellcheck="false">` +
-        `<input type="color" aria-label="Jacket" value="${p.jacket}"><input type="color" aria-label="Hair" value="${p.hair}">` +
+      row.innerHTML = '<input type="text" aria-label="Name"><input type="text" aria-label="Entity" spellcheck="false">' +
+        '<input type="color" aria-label="Jacket"><input type="color" aria-label="Hair">' +
         `<label class="row" title="Long hair"><input type="checkbox" ${p.longHair ? 'checked' : ''}> long</label>` +
         `<label class="row" title="Home"><input type="checkbox" ${p.home ? 'checked' : ''}> home</label>`;
       const [name, entity, jacket, hair] = Array.from(row.querySelectorAll('input'));
       const [long, home] = Array.from(row.querySelectorAll<HTMLInputElement>('input[type=checkbox]'));
+      // set as properties, not in the HTML, so whatever is typed stays text
+      name.value = p.name; entity.value = p.entity; jacket.value = p.jacket; hair.value = p.hair;
       const sync = (): void => {
         Object.assign(people[i], { name: name.value, entity: entity.value, jacket: jacket.value, hair: hair.value, longHair: long.checked, home: home.checked });
         update();
@@ -107,9 +109,10 @@ function timeMachine(): void {
       const w = windowLights[id];
       const row = document.createElement('div');
       row.className = 'window';
-      row.innerHTML = `<span>${id.replace(/_/g, ' ')}</span><input type="text" aria-label="Light for ${id}" value="${w.entity}" spellcheck="false">` +
+      row.innerHTML = `<span>${id.replace(/_/g, ' ')}</span><input type="text" aria-label="Light for ${id}" spellcheck="false">` +
         `<label class="row"><input type="checkbox" ${w.on ? 'checked' : ''}> on</label>`;
       const [text, box] = Array.from(row.querySelectorAll('input'));
+      text.value = w.entity;
       const sync = (): void => { w.entity = text.value; w.on = box.checked; update(); };
       text.addEventListener('input', sync);
       box.addEventListener('input', sync);

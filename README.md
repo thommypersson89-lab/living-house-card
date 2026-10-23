@@ -88,7 +88,7 @@ HACS installs the file attached to the latest [release](../../releases).
 ### Manual
 
 1. Download `dist/living-house-card.js` and copy it to `config/www/` on your Home Assistant server.
-2. Go to **Settings → Dashboards → ⋮ → Resources → Add resource**, enter `/local/living-house-card.js?v=0.1.1` and choose **JavaScript module**. Raise `?v=` whenever you replace the file.
+2. Go to **Settings → Dashboards → ⋮ → Resources → Add resource**, enter `/local/living-house-card.js?v=0.1.2` and choose **JavaScript module**. Raise `?v=` whenever you replace the file.
 3. Reload your browser.
 
 ## Quick start
@@ -178,7 +178,7 @@ people:
       umbrella: "#8a5ad1"
 ```
 
-Each person gets a built-in look in turn; `look` changes any part of it.
+Each person gets a built-in look in turn; `look` changes any part of it. Colours are hex, like `#2f7d6d`.
 
 ### Rooms
 

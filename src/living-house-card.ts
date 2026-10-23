@@ -8,7 +8,7 @@ import { Hass, HassEntity, Scene, derive } from './derive';
 import { H, W, toScene } from './draw/util';
 import { freeze, scopeIds } from './freeze';
 import { modelFor } from './model';
-import type { HouseModel } from './model/types';
+import type { HouseColors, HouseModel } from './model/types';
 import './editor';
 
 const FADE_MS = 1500;
@@ -45,6 +45,11 @@ const TEXT = {
 /** An entity to toggle, or a path to open. */
 const tapOf = (target: string | undefined, fallback: Hit['tap']): Hit['tap'] =>
   !target ? fallback : target.startsWith('/') ? { action: 'navigate', path: target } : { action: 'toggle' };
+
+/** Only hex colours (#rgb or #rrggbb) are passed on: they are written straight into the SVG. */
+function hexColors(c: HouseColors | undefined): HouseColors {
+  return Object.fromEntries(Object.entries(c ?? {}).filter(([, v]) => typeof v === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)));
+}
 
 export class LivingHouseCard extends LitElement {
   static properties = {
@@ -120,7 +125,7 @@ export class LivingHouseCard extends LitElement {
   /** Take in the new list of layers: new variants fade in over the old ones, layers that went away fade out. */
   private _sync(scene: Scene): void {
     const now = performance.now();
-    const specs = compose(scene, this._model, this._config?.colors);
+    const specs = compose(scene, this._model, hexColors(this._config?.colors));
     const wanted = new Set(specs.map((s) => s.slot));
     const instant = this.reducedMotion;
     const next: Entry[] = [];

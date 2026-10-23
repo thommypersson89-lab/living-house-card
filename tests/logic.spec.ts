@@ -103,3 +103,11 @@ test('scenes are derived as expected', () => {
   expect(sc('13_summer_night').music).toEqual(['side_left']);
   expect(sc('13_summer_night').tv).toEqual(['side_left']);
 });
+
+test('colours from the config must be hex, since they are written into the SVG', () => {
+  const bad = '"/><image href="x" onerror="alert(1)"/>';
+  const cfg = { ...TEST_CONFIG, people: [{ ...TEST_CONFIG.people![0], look: { jacket: bad, hair: '#abc' } }] };
+  const p = derive({ states: SCENES[Object.keys(SCENES)[0]].states }, cfg).people[0];
+  expect(p.look.jacket).not.toContain('<');
+  expect(p.look.hair).toBe('#abc');
+});
