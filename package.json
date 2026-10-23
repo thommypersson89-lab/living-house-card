@@ -1,0 +1,27 @@
+{
+  "name": "living-house-card",
+  "version": "0.1.0",
+  "description": "A Home Assistant card that draws your house live: sun and moon, weather, lights, people, holidays and wildlife.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run build:card && npm run build:demo",
+    "build:card": "esbuild src/living-house-card.ts --bundle --format=esm --target=es2021 --minify --legal-comments=none --outfile=dist/living-house-card.js",
+    "build:demo": "esbuild demo/demo.ts --bundle --format=esm --target=es2021 --sourcemap --outfile=demo/build/demo.js",
+    "typecheck": "tsc --noEmit",
+    "serve": "http-server . -p 8765 -c-1 -s",
+    "test": "playwright test",
+    "test:update": "playwright test --update-snapshots"
+  },
+  "dependencies": {
+    "lit": "3.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/node": "22.18.8",
+    "esbuild": "0.25.10",
+    "http-server": "14.1.1",
+    "typescript": "5.9.3"
+  },
+  "license": "MIT"
+}

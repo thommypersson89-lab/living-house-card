@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Living House Card – time machine</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+  <style>
+  /* Layout: the card on top as a stage, the controls as a panel below, a gallery of test scenes last */
+  :root {
+    --bg: #eef1ec; --panel: #ffffff; --fg: #1d2620; --muted: #5d6b63; --line: #d3dbd4; --accent: #b8661f; --track: #c9d3cb;
+    --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+    --body: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #10161b; --panel: #19222a; --fg: #e6ece8; --muted: #95a39b; --line: #2b3640; --accent: #f0a25a; --track: #34414c; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #10161b; --panel: #19222a; --fg: #e6ece8; --muted: #95a39b; --line: #2b3640; --accent: #f0a25a; --track: #34414c; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+  main { max-width: 1080px; margin: 0 auto; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 14px; }
+  h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(1.5rem, 3.5vw, 2.1rem); letter-spacing: -.01em; }
+  h2 { font-size: 1.25rem; margin-top: 18px; }
+  .lede { color: var(--muted); margin: 0; max-width: 65ch; }
+  ha-card { display: block; border-radius: 14px; overflow: hidden; max-width: 100%; }
+  #machine { box-shadow: 0 10px 30px -18px rgba(0,0,0,.6); border-radius: 14px; }
+  #when { color: var(--accent); font-weight: 700; min-height: 1.5em; font-variant-numeric: tabular-nums; }
+  #controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px 20px; background: var(--panel); border: 1px solid var(--line); padding: 16px; border-radius: 14px; }
+  #controls label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: .85rem; letter-spacing: .02em; min-width: 0; }
+  #controls .row { flex-direction: row; align-items: center; gap: 8px; color: var(--fg); font-size: .95rem; letter-spacing: 0; }
+  #controls .wide { grid-column: 1 / -1; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=checkbox] { accent-color: var(--accent); width: 18px; height: 18px; }
+  button, select { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; font: inherit; }
+  button { cursor: pointer; font-weight: 700; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px; }
+  figure { margin: 0; min-width: 0; }
+  figcaption { margin-top: 6px; font-size: .85rem; color: var(--muted); }
+  figcaption a { color: inherit; text-decoration: none; pointer-events: none; }
+  body.single main > :not(#single) { display: none; }
+  body.single main { max-width: none; padding: 0; display: block; }
+  body.single #single { width: 800px; }
+</style>
+</head>
+<body>
+<main>
+  <div id="single"></div>
+  <h1>Living House Card</h1>
+  <p class="lede">The card with made-up values instead of Home Assistant. Drag the sliders to fast-forward through the day, the year and the weather. The sun is calculated for southern Sweden.</p>
+  <div id="machine"></div>
+  <div id="when" aria-live="polite"></div>
+  <div id="controls">
+    <label class="wide">Day of the year <input id="day" type="range" min="0" max="364" step="1"></label>
+    <label class="wide">Time of day <input id="minute" type="range" min="0" max="1439" step="1"></label>
+    <label class="row"><button id="play" type="button">▶ Play</button>
+      <select id="speed" aria-label="Speed"><option value="day">a day in 24 s</option><option value="year">a year in 60 s</option></select></label>
+    <label>House <select id="house"><option value="villa">Swedish villa</option></select></label>
+    <label>Weather
+      <select id="weather">
+        <option value="sunny">sunny</option><option value="partlycloudy" selected>partly cloudy</option><option value="cloudy">cloudy</option><option value="fog">fog</option>
+        <option value="rainy">rain</option><option value="pouring">pouring</option><option value="lightning">thunder</option><option value="lightning-rainy">thunderstorm</option>
+        <option value="snowy">snow</option><option value="snowy-rainy">sleet</option><option value="hail">hail</option><option value="windy">windy</option><option value="windy-variant">windy and cloudy</option><option value="exceptional">severe weather</option>
+      </select></label>
+    <label class="row"><button id="random" type="button">🎲 Random weather</button></label>
+    <label>Cloud cover % <input id="cover" type="range" min="0" max="100" value="40"></label>
+    <label>Temperature °C <input id="temp" type="range" min="-15" max="32" value="11"></label>
+    <label>Wind m/s <input id="wind" type="range" min="0" max="20" step=".5" value="4"></label>
+    <label>Wind blows <select id="bearing"><option value="270">to the left</option><option value="90">to the right</option></select></label>
+    <label>Power W <input id="power" type="range" min="0" max="4000" step="50" value="300"></label>
+    <label>Aurora chance % <input id="aurora" type="range" min="0" max="100" value="0"></label>
+    <label>Minecraft players <input id="mc" type="range" min="0" max="3" value="0"></label>
+    <label>Lamp colour
+      <select id="lamp"><option value="k2700">warm</option><option value="k3500">neutral</option><option value="k5000">cool</option>
+        <option value="5">red</option><option value="28">orange</option><option value="120">green</option><option value="220">blue</option><option value="270">purple</option><option value="320">pink</option></select></label>
+    <div class="wide checks">
+      <label class="row"><input id="alex" type="checkbox" checked> Alex home</label>
+      <label class="row"><input id="sam" type="checkbox" checked> Sam home</label>
+      <label class="row"><input id="l_front" type="checkbox" checked> Downstairs lights</label>
+      <label class="row"><input id="l_living" type="checkbox"> Living room</label>
+      <label class="row"><input id="l_bedroom" type="checkbox"> Bedroom</label>
+      <label class="row"><input id="l_loft" type="checkbox"> Loft</label>
+      <label class="row"><input id="tv" type="checkbox"> TV</label>
+      <label class="row"><input id="music" type="checkbox"> Music on the porch</label>
+      <label class="row"><input id="washer" type="checkbox"> Washing machine</label>
+      <label class="row"><input id="birthday" type="checkbox"> Birthday</label>
+      <label class="row"><input id="calendar" type="checkbox"> Something in the calendar</label>
+      <label class="row"><input id="still" type="checkbox"> Reduce motion</label>
+    </div>
+  </div>
+  <h2>Test scenes</h2>
+  <p class="lede">The scenes the visual tests compare pixel by pixel.</p>
+  <div id="gallery"></div>
+</main>
+<script type="module" src="./build/demo.js"></script>
+</body>
+</html>
