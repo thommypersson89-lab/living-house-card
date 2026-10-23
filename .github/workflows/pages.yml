@@ -33,7 +33,7 @@ jobs:
       - name: Put the demo page together
         run: |
           mkdir -p site
-          cp -r demo/index.html demo/build site/
+          cp -r demo/index.html demo/build demo/fonts site/
           cp dist/living-house-card.js site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
