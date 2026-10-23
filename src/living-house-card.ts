@@ -29,7 +29,7 @@ interface Entry {
 interface Hit {
   title: string;
   entity?: string;
-  tap: { action: 'toggle' | 'more-info' | 'navigate' | 'none'; path?: string };
+  tap: { action: 'toggle' | 'more-info' | 'navigate' | 'none'; path?: string; entity?: string };
   shape: ReturnType<typeof svg>;
 }
 
@@ -44,7 +44,10 @@ const TEXT = {
 
 /** An entity to toggle, or a path to open. */
 const tapOf = (target: string | undefined, fallback: Hit['tap']): Hit['tap'] =>
-  !target ? fallback : target.startsWith('/') ? { action: 'navigate', path: target } : { action: 'toggle' };
+  !target ? fallback : target.startsWith('/') ? { action: 'navigate', path: target } : { action: 'toggle', entity: target };
+
+/** A tap only toggles things that are harmless to switch by mistake; locks, covers, alarms and the like open their dialog instead. */
+const TOGGLE_DOMAINS = ['light', 'switch', 'fan', 'input_boolean'];
 
 /** Only hex colours (#rgb or #rrggbb) are passed on: they are written straight into the SVG. */
 function hexColors(c: HouseColors | undefined): HouseColors {
@@ -252,10 +255,11 @@ export class LivingHouseCard extends LitElement {
 
   private _act(h: Hit, hold: boolean): void {
     const a = hold ? { action: 'more-info' as const } : h.tap;
-    if (a.action === 'toggle' && h.entity) {
-      this.hass?.callService?.('homeassistant', 'toggle', { entity_id: h.entity });
-    } else if (a.action === 'more-info' && h.entity) {
-      this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: h.entity }, bubbles: true, composed: true }));
+    const entity = a.entity ?? h.entity;
+    if (a.action === 'toggle' && entity && TOGGLE_DOMAINS.includes(entity.split('.')[0])) {
+      this.hass?.callService?.('homeassistant', 'toggle', { entity_id: entity });
+    } else if ((a.action === 'more-info' || a.action === 'toggle') && entity) {
+      this.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId: entity }, bubbles: true, composed: true }));
     } else if (a.action === 'navigate' && a.path) {
       this._navigate(a.path);
     }

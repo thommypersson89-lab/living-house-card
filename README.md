@@ -88,7 +88,7 @@ HACS installs the file attached to the latest [release](../../releases).
 ### Manual
 
 1. Download `dist/living-house-card.js` and copy it to `config/www/` on your Home Assistant server.
-2. Go to **Settings → Dashboards → ⋮ → Resources → Add resource**, enter `/local/living-house-card.js?v=0.1.2` and choose **JavaScript module**. Raise `?v=` whenever you replace the file.
+2. Go to **Settings → Dashboards → ⋮ → Resources → Add resource**, enter `/local/living-house-card.js?v=0.1.3` and choose **JavaScript module**. Raise `?v=` whenever you replace the file.
 3. Reload your browser.
 
 ## Quick start
@@ -155,7 +155,7 @@ The visual editor covers the simple options. People, rooms and colours are set i
 | `name_days` | A list of `MM-DD` dates: a cake and a flag. |
 | `motion.when_home` | Animate only while one of these entities is `home` (default: the first person). |
 | `motion.reduce` | An input boolean that freezes everything while it is on. Devices that ask for reduced motion are always frozen. |
-| `tap` | `street_lamp`, `mailbox`, `chimney`: an entity to toggle, or a path to open (starting with `/`). |
+| `tap` | `street_lamp`, `mailbox`, `chimney`: an entity to toggle, or a path to open (starting with `/`). A tap only toggles `light`, `switch`, `fan` and `input_boolean` entities; anything else (a lock, a garage door, an alarm) opens its dialog instead, so a stray tap on a wall tablet can't open the house. |
 | `help_path` | Shows a ❓ button that opens this path. |
 | `labels`, `large_labels` | Show the labels at the bottom; larger ones for a wall tablet. |
 | `night_dim` | `{from: 23, to: 6}` by default; `false` turns it off. |

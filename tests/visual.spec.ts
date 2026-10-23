@@ -51,3 +51,31 @@ test('the configurator writes YAML for the chosen house', async ({ page }) => {
   await expect(page.locator('#yaml')).toContainText('roof: "#8a3324"');
   expect(errors).toEqual([]);
 });
+
+test('a tap only toggles harmless things; a lock or a garage door opens its dialog instead', async ({ page }) => {
+  await page.goto('/demo/index.html?scene=05_autumn_day_partly_cloudy');
+  await page.locator('body[data-ready="1"]').waitFor();
+  const result = await page.evaluate(async () => {
+    const calls: string[] = [];
+    const el = document.createElement('living-house-card') as HTMLElement & { setConfig(c: unknown): void; hass: unknown; updateComplete: Promise<unknown> };
+    el.setConfig({
+      weather: 'weather.home', labels: false,
+      rooms: [{ window: 'front', light: 'lock.front_door', name: 'Lock' }, { window: 'gable', light: 'light.loft', name: 'Loft' }],
+      tap: { street_lamp: 'cover.garage_door', mailbox: 'switch.porch' }, calendar: 'calendar.family',
+    });
+    el.hass = {
+      states: { 'weather.home': { state: 'sunny', attributes: {} } }, config: { latitude: 59.33, longitude: 18.07 },
+      callService: (d: string, s: string, data: { entity_id: string }) => calls.push(`${d}.${s} ${data.entity_id}`),
+    };
+    el.addEventListener('hass-more-info', (e) => calls.push(`more-info ${(e as CustomEvent).detail.entityId}`));
+    document.body.append(el);
+    await el.updateComplete;
+    const hits = Array.from(el.shadowRoot!.querySelectorAll<SVGGElement>('g.hit'));
+    const press = (label: string): void => {
+      hits.find((h) => h.getAttribute('aria-label')?.startsWith(label))!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    };
+    press('Lock'); press('Loft'); press('Street lamp'); press('Mailbox');
+    return calls;
+  });
+  expect(result).toEqual(['more-info lock.front_door', 'homeassistant.toggle light.loft', 'more-info cover.garage_door', 'homeassistant.toggle switch.porch']);
+});
