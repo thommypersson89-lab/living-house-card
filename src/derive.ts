@@ -64,6 +64,8 @@ export interface Scene {
   people: PersonState[];
   porchLight: boolean;
   nightDim: boolean;
+  country: 'se' | 'us' | 'none';
+  flagStyle: 'se' | 'us';
   holiday: string;
   advent: boolean;
   christmas: boolean;
@@ -264,8 +266,8 @@ export function derive(hass: Hass, cfg: LivingHouseConfig, opt: DeriveOptions = 
     if (ids.length && (everywhere || ids.some(audible))) music.push(spot);
   }
 
-  const country = (cfg.country ?? 'se') === 'se' ? 'se' : 'none';
-  const hol = holidaysAt(now, !night, country as Country, cfg.name_days ?? []);
+  const country: Country = cfg.country === 'us' || cfg.country === 'none' ? cfg.country : 'se';
+  const hol = holidaysAt(now, !night, country, cfg.name_days ?? []);
   const nd = cfg.night_dim === false ? null : cfg.night_dim ?? { from: 23, to: 6 };
   const h = now.getHours();
   const nightDim = !!nd && (nd.from > nd.to ? h >= nd.from || h < nd.to : h >= nd.from && h < nd.to);
@@ -281,6 +283,8 @@ export function derive(hass: Hass, cfg: LivingHouseConfig, opt: DeriveOptions = 
     people,
     porchLight: porchIds.some((id) => S[id]?.state === 'home') && DARK_PHASES.includes(light),
     nightDim,
+    country,
+    flagStyle: cfg.flag ?? (country === 'us' ? 'us' : 'se'),
     holiday: helper('holiday')?.state ?? hol.today,
     advent: hol.advent,
     christmas: hol.christmas,

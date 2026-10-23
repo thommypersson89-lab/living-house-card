@@ -7,6 +7,7 @@ type States = Record<string, HassEntity>;
 export interface TestScene {
   states: States;
   now: Date;
+  config?: Partial<LivingHouseConfig>;
 }
 
 /** The configuration every test scene is rendered with. */
@@ -55,6 +56,27 @@ function lamp(v: string): HassEntity {
   if (c in kelvin) return { state: 'on', attributes: { brightness, color_mode: 'color_temp', color_temp_kelvin: kelvin[c] } };
   return { state: 'on', attributes: { brightness, color_mode: 'hs', hs_color: [hue[c] ?? 30, 85] } };
 }
+
+/** Room wiring for each house model's windows (the test entities stay the same). */
+export function houseConfig(house: string): Partial<LivingHouseConfig> {
+  if (house === 'ranch') {
+    return { house, rooms: [
+      { window: 'front', name: 'Living room', light: 'light.downstairs' },
+      { window: 'front_right', name: 'Kitchen', light: 'light.living_room', music: ['media_player.living_room'], tv: 'media_player.living_room' },
+      { window: 'side', name: 'Bedroom', light: 'light.bedroom', tv: 'media_player.bedroom_tv' },
+    ], washer: { ...TEST_CONFIG.washer!, window: 'side' } };
+  }
+  if (house === 'townhouse') {
+    return { house, rooms: [
+      { window: 'front', name: 'Kitchen', light: 'light.downstairs' },
+      { window: 'upstairs', name: 'Living room', light: 'light.living_room', music: ['media_player.living_room'], tv: 'media_player.living_room' },
+      { window: 'attic', name: 'Bedroom', light: 'light.bedroom', tv: 'media_player.bedroom_tv' },
+    ], washer: { ...TEST_CONFIG.washer!, window: 'front' } };
+  }
+  return { house };
+}
+
+const on = (scene: TestScene, config: Partial<LivingHouseConfig>): TestScene => ({ ...scene, config });
 
 /** A plain Wednesday in October; scenes that need a holiday or a time of night set their own clock. */
 export const TEST_NOW = new Date(2026, 9, 14, 12, 0, 0);
@@ -133,4 +155,22 @@ export const SCENES: Record<string, TestScene> = {
   '27_aurora_meteors': make({ season: 'winter', elev: -35, w: 'clear-night', cov: 0, temp: -3, now: at(8, 12, 22),
     extra: { 'binary_sensor.aurora_visible': 'on' } }),
   '28_night_silhouettes': make({ elev: -35, w: 'cloudy', cov: 100, front: 'warm_bright', home: ['alex', 'sam'], now: at(10, 14, 3) }),
+  // the other house models
+  '29_ranch_autumn_day': on(make({ elev: 20, az: 160, w: 'partlycloudy', cov: 40, extra: { 'calendar.family': 'on' } }), houseConfig('ranch')),
+  '30_ranch_snow_night': on(make({ season: 'winter', snow: true, elev: -30, w: 'clear-night', cov: 0, temp: -6, moon: 'waxing_crescent', moonEl: 20, moonAz: 240,
+    front: 'warm_bright', bedroom: 'blue_bright', power: 1800 }), houseConfig('ranch')),
+  '31_ranch_rain_washer': on(make({ w: 'rainy', cov: 100, mm: 1.2, elev: 15, wind: 6, home: ['alex', 'sam'], living: 'warm_dim',
+    extra: { 'sensor.washer': 'running', 'input_boolean.laundry_left': 'on' } }), houseConfig('ranch')),
+  '32_townhouse_summer_day': on(make({ season: 'summer', elev: 56, az: 180, w: 'sunny', cov: 5, temp: 24, home: ['alex', 'sam'] }), houseConfig('townhouse')),
+  '33_townhouse_evening_music': on(make({ elev: -8, w: 'partlycloudy', cov: 30, front: 'warm_bright', living: 'purple_bright', loft: 'warm_dim',
+    extra: { 'media_player.living_room': 'playing' } }), houseConfig('townhouse')),
+  '34_townhouse_night_silhouettes': on(make({ elev: -35, w: 'cloudy', cov: 100, living: 'warm_bright', home: ['alex', 'sam'], now: at(10, 14, 3) }), houseConfig('townhouse')),
+  // US holidays
+  '35_us_fourth_of_july_day': on(make({ season: 'summer', elev: 50, az: 200, w: 'sunny', cov: 10, temp: 29, home: ['alex', 'sam'], now: at(7, 4, 14) }), { ...houseConfig('ranch'), country: 'us' }),
+  '36_us_fourth_of_july_night': on(make({ season: 'summer', elev: -14, w: 'clear-night', cov: 0, temp: 22, front: 'warm_bright', now: at(7, 4, 22) }), { ...houseConfig('ranch'), country: 'us' }),
+  '37_us_thanksgiving': on(make({ elev: 15, az: 200, w: 'cloudy', cov: 80, temp: 6, home: ['alex', 'sam'], power: 1600, now: at(11, 26, 14) }), { ...houseConfig('ranch'), country: 'us' }),
+  '38_us_christmas_morning': on(make({ season: 'winter', snow: true, elev: 8, az: 150, w: 'partlycloudy', cov: 30, temp: -4, home: ['alex', 'sam'], now: at(12, 25, 10) }), { ...houseConfig('ranch'), country: 'us' }),
+  '39_us_st_patricks': on(make({ season: 'spring', elev: 30, az: 180, w: 'partlycloudy', cov: 40, temp: 9, now: at(3, 17, 12) }), { ...houseConfig('townhouse'), country: 'us' }),
+  '40_us_halloween_townhouse': on(make({ elev: -25, w: 'partlycloudy', cov: 30, temp: 8, front: 'orange_bright', living: 'purple_bright', moon: 'full_moon', moonEl: 30, moonAz: 200, now: at(10, 31, 20) }),
+    { ...houseConfig('townhouse'), country: 'us' }),
 };

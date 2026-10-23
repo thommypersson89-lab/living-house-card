@@ -34,8 +34,8 @@ export interface HouseModel {
   roofOutline: string;
   /** window id -> panes; ids are what `rooms[].window` refers to */
   windows: Record<string, Pane[]>;
-  /** windows people are seen in at night (pane index into `windows.front`) */
-  silhouettes: number[];
+  /** windows people are seen in at night: window id and pane index, one per person */
+  silhouettes: [string, number][];
   /** sun shadow on the ground: left x, right x, ground y (model coords) */
   footprint: [number, number, number];
   /** soft contact shadow under the house: cx, cy, rx (scene coords) */
@@ -44,6 +44,9 @@ export interface HouseModel {
   pathStart: Point;
   /** bushes at the house corners (scene x) */
   bushes: number[];
+  /** the street lamp's foot and the mailbox post (scene coords) */
+  lamp: Point;
+  mailbox: Point;
   door: Point;
   porchLamp: Point;
   chimney: Point;
@@ -59,6 +62,7 @@ export interface HouseModel {
   icicles: { x: number; y: number; dx: number; dy: number; n: number };
   /** decorations */
   deco: {
+    cosy: [string, number]; // window id and pane for Friday-night popcorn and candles
     star: Point; // advent star hanging in a front window
     candles: Point; // advent candlestick in the other front window
     pumpkins: [number, number, number][]; // x, ground y, size

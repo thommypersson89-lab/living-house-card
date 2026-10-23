@@ -25,7 +25,19 @@ export const allSaints = (y: number): Date => firstWeekday(day(y, 10, 31), 6);
 export const mothersDaySE = (y: number): Date => firstWeekday(day(y, 5, 25), 0);
 export const fathersDaySE = (y: number): Date => addDays(firstWeekday(day(y, 11, 1), 0), 7);
 
-export type Country = 'se' | 'none';
+// US dates
+const nthWeekday = (y: number, m: number, wd: number, nth: number): Date => addDays(firstWeekday(day(y, m, 1), wd), 7 * (nth - 1));
+const lastWeekday = (y: number, m: number, wd: number): Date => {
+  const last = new Date(y, m, 0);
+  return addDays(last, -((last.getDay() - wd + 7) % 7));
+};
+export const thanksgiving = (y: number): Date => nthWeekday(y, 11, 4, 4);
+export const memorialDay = (y: number): Date => lastWeekday(y, 5, 1);
+export const laborDay = (y: number): Date => nthWeekday(y, 9, 1, 1);
+export const mothersDayUS = (y: number): Date => nthWeekday(y, 5, 0, 2);
+export const fathersDayUS = (y: number): Date => nthWeekday(y, 6, 0, 3);
+
+export type Country = 'se' | 'us' | 'none';
 
 export interface Holidays {
   today: string; // a holiday id (christmas_eve, lucia, …) or none
@@ -35,7 +47,7 @@ export interface Holidays {
   easter: boolean;
   midsummer: boolean;
   flagDay: boolean;
-  newYear: boolean; // fireworks
+  newYear: boolean; // fireworks (New Year, and the evening of the Fourth of July in the US)
   meteors: boolean; // a meteor-shower night
   fridayNight: boolean;
 }
@@ -53,7 +65,9 @@ export function holidaysAt(n: Date, sunUp: boolean, country: Country = 'se', nam
   if (country === 'none') {
     return { ...common, today: nameDay ? 'name_day' : 'none', advent: false, christmas: false, halloween: false, easter: false, midsummer: false, flagDay: false };
   }
-  const eas = easter(y), mids = midsummerEve(y), allh = allSaints(y);
+  const eas = easter(y);
+  if (country === 'us') return usHolidays(n, sunUp, common, nameDay);
+  const mids = midsummerEve(y), allh = allSaints(y);
   let today = 'none';
   if (md === '12-24') today = 'christmas_eve';
   else if (md === '12-13') today = 'lucia';
@@ -79,5 +93,38 @@ export function holidaysAt(n: Date, sunUp: boolean, country: Country = 'se', nam
     easter: between(n, addDays(eas, -14), addDays(eas, 1)),
     midsummer: between(n, mids, addDays(mids, 2)),
     flagDay: (FLAG_DAYS_SE.includes(md) || same(n, eas) || same(n, addDays(mids, 1))) && h >= 8 && sunUp,
+  };
+}
+
+function usHolidays(n: Date, sunUp: boolean, common: Pick<Holidays, 'newYear' | 'meteors' | 'fridayNight'>, nameDay: boolean): Holidays {
+  const y = n.getFullYear(), md = mmdd(n), h = n.getHours();
+  const eas = easter(y), tg = thanksgiving(y);
+  let today = 'none';
+  if (md === '12-24') today = 'christmas_eve';
+  else if (md === '12-25') today = 'christmas_day';
+  else if (md === '02-14') today = 'valentines';
+  else if (md === '03-17') today = 'st_patricks';
+  else if (same(n, mothersDayUS(y))) today = 'mothers_day';
+  else if (same(n, memorialDay(y))) today = 'memorial_day';
+  else if (md === '06-14') today = 'flag_day';
+  else if (same(n, fathersDayUS(y))) today = 'fathers_day';
+  else if (md === '07-04') today = 'independence_day';
+  else if (same(n, laborDay(y))) today = 'labor_day';
+  else if (md === '11-11') today = 'veterans_day';
+  else if (same(n, tg)) today = 'thanksgiving';
+  else if (nameDay) today = 'name_day';
+  // holiday lights and the tree from the day after Thanksgiving until Epiphany
+  const lights = dateOnly(n) > tg || (n.getMonth() === 0 && n.getDate() <= 6);
+  const flagDays = ['memorial_day', 'flag_day', 'independence_day', 'labor_day', 'veterans_day'];
+  return {
+    ...common,
+    newYear: common.newYear || (md === '07-04' && h >= 20),
+    today,
+    advent: lights,
+    christmas: lights,
+    halloween: md >= '10-15' && md <= '10-31',
+    easter: between(n, addDays(eas, -1), addDays(eas, 1)),
+    midsummer: false,
+    flagDay: flagDays.includes(today) && h >= 8 && sunUp,
   };
 }

@@ -20,6 +20,7 @@ export interface LivingHouseConfig {
   weather: string;
   house?: string; // house model: villa
   country?: 'se' | 'us' | 'none'; // which holidays show up
+  flag?: 'se' | 'us'; // the flag on flag days and birthdays (defaults to the country's)
   language?: 'en' | 'sv'; // labels
   colors?: { wall?: string; side?: string; roof?: string; door?: string; curtains?: string };
   people?: PersonConfig[];

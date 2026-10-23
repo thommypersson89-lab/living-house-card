@@ -5,7 +5,7 @@ import type { LivingHouseCard } from '../src/living-house-card';
 import { sunPosition } from '../src/astro';
 import { EXAMPLE, LivingHouseConfig } from '../src/config';
 import type { Hass, HassEntity } from '../src/derive';
-import { SCENES, TEST_CONFIG } from '../tests/scenes';
+import { SCENES, TEST_CONFIG, houseConfig } from '../tests/scenes';
 
 const LAT = 55.6, LON = 13.0; // southern Sweden
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -27,7 +27,8 @@ if (only !== null) {
   const root = $('single');
   if (!scene) root.textContent = `Unknown scene: ${only}`;
   else {
-    const el = card({ ...TEST_CONFIG, labels: params.get('labels') !== '0' }, scene.states, scene.now);
+    const house = params.get('house');
+    const el = card({ ...TEST_CONFIG, ...scene.config, ...(house ? houseConfig(house) : {}), labels: params.get('labels') !== '0' }, scene.states, scene.now);
     root.append(el);
     el.updateComplete.then(() => requestAnimationFrame(() => document.body.setAttribute('data-ready', '1')));
   }
@@ -141,7 +142,7 @@ function gallery(): void {
     a.href = `?scene=${name}`;
     a.textContent = name.replace(/_/g, ' ');
     cap.append(a);
-    fig.append(card(TEST_CONFIG, scene.states, scene.now), cap);
+    fig.append(card({ ...TEST_CONFIG, ...scene.config }, scene.states, scene.now), cap);
     g.append(fig);
   }
 }

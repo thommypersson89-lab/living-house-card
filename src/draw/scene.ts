@@ -1,6 +1,6 @@
 // The fixed parts of the scene: sky, ground, the house, trees and clouds.
 import type { HouseColors, HouseModel, Look } from '../model/types';
-import { CLOUD_POS, GROUND, H, LAMP, Layer, MAILBOX, Rng, TREES, W, f0, f1, fgMask, inHouse, layer, seedOf, shade, toScene } from './util';
+import { CLOUD_POS, GROUND, H, Layer, Rng, TREES, W, f0, f1, fgMask, inHouse, layer, seedOf, shade, toScene } from './util';
 
 
 // weather state -> (clouds, dark clouds, rain, snow, fog, thunder, wind, sun/moon visible, overcast sky)
@@ -140,7 +140,7 @@ export function base(M: HouseModel, season: Look, state: string, night: boolean,
   s.push(ground(M, season, night, overcast, rnd));
   s.push(`<ellipse cx="${M.groundShadow[0]}" cy="${M.groundShadow[1]}" rx="${M.groundShadow[2]}" ry="14" fill="#000" opacity=".22"/>`);
   // street lamp (switched off; the light is its own layer)
-  const [lx, lb] = LAMP;
+  const [lx, lb] = M.lamp;
   s.push(
     `<rect x="${lx - 2}" y="${lb - 78}" width="4" height="78" fill="#2f3438"/><rect x="${lx - 5}" y="${lb - 4}" width="10" height="4" fill="#2f3438"/>` +
       `<path d="M${lx - 7},${lb - 78} L${lx + 7},${lb - 78} L${lx + 4},${lb - 88} L${lx - 4},${lb - 88} Z" fill="#2f3438"/><rect x="${lx - 4.5}" y="${lb - 86}" width="9" height="8" fill="${night ? '#5a646c' : '#c9d2d8'}"/>`,
@@ -153,7 +153,7 @@ export function base(M: HouseModel, season: Look, state: string, night: boolean,
     }
   }
   // mailbox (flag down)
-  const [mx, mb] = MAILBOX;
+  const [mx, mb] = M.mailbox;
   s.push(
     `<rect x="${mx - 1.5}" y="${mb - 22}" width="3" height="22" fill="#3a3f44"/><rect x="${mx - 8}" y="${mb - 32}" width="16" height="11" rx="5" fill="#2b6cb0"/>` +
       `<rect x="${mx + 4}" y="${mb - 27}" width="7" height="2" fill="#e05a5a"/>`,

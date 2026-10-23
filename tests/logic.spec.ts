@@ -2,7 +2,7 @@
 import { expect, test } from '@playwright/test';
 import { ageToPhase, moonAge, seasonOf, sunPosition } from '../src/astro';
 import { derive, lampOf, lightPhase } from '../src/derive';
-import { allSaints, easter, fathersDaySE, holidaysAt, midsummerEve, mothersDaySE } from '../src/holidays';
+import { allSaints, easter, fathersDaySE, fathersDayUS, holidaysAt, laborDay, memorialDay, midsummerEve, mothersDaySE, mothersDayUS, thanksgiving } from '../src/holidays';
 import { SCENES, TEST_CONFIG } from './scenes';
 
 const iso = (d: Date): string => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -28,6 +28,23 @@ test("today's holiday and holiday periods (Sweden)", () => {
   expect(holidaysAt(new Date(2026, 5, 6, 12), false).flagDay).toBe(false); // the flag comes down at sunset
   expect(holidaysAt(new Date(2026, 11, 21, 12), true, 'se', ['12-21']).today).toBe('name_day');
   expect(holidaysAt(new Date(2026, 11, 24, 18), false, 'none').today).toBe('none');
+});
+
+test('US holidays', () => {
+  expect(iso(thanksgiving(2026))).toBe('2026-11-26');
+  expect(iso(memorialDay(2026))).toBe('2026-05-25');
+  expect(iso(laborDay(2026))).toBe('2026-09-07');
+  expect(iso(mothersDayUS(2026))).toBe('2026-05-10');
+  expect(iso(fathersDayUS(2026))).toBe('2026-06-21');
+  const july4 = holidaysAt(new Date(2026, 6, 4, 14), true, 'us');
+  expect(july4.today).toBe('independence_day');
+  expect(july4.flagDay).toBe(true);
+  expect(july4.newYear).toBe(false);
+  expect(holidaysAt(new Date(2026, 6, 4, 21), false, 'us').newYear).toBe(true); // fireworks in the evening
+  expect(holidaysAt(new Date(2026, 10, 26, 12), true, 'us').christmas).toBe(false);
+  expect(holidaysAt(new Date(2026, 10, 27, 12), true, 'us').christmas).toBe(true); // lights go up the day after Thanksgiving
+  expect(holidaysAt(new Date(2026, 9, 20, 20), false, 'us').halloween).toBe(true);
+  expect(holidaysAt(new Date(2026, 5, 20, 12), true, 'us').midsummer).toBe(false);
 });
 
 test('light phases', () => {

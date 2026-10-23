@@ -2,7 +2,7 @@
 // Decorations on the house are drawn where they sit on the villa and moved to the model's anchors.
 import type { HouseModel, Point } from '../model/types';
 import { VILLA } from '../model/villa';
-import { MAILBOX, Layer, Rng, f0, f1, f2, grad, inHouse, layer, toScene } from './util';
+import { Layer, Rng, f0, f1, f2, grad, inHouse, layer, toScene } from './util';
 
 /** Move something drawn at the villa's anchor to this model's anchor. */
 function at(p: Point, ref: Point, g: string): string {
@@ -89,8 +89,10 @@ export function maypole(x = 640, base = 352, top = 246): Layer {
   return layer(b);
 }
 
-/** The Swedish flag waving with the wind (d = ±1). */
-export function flag(d: number): Layer {
+/** A flag waving with the wind (d = ±1): Swedish or American. */
+export type FlagStyle = 'se' | 'us';
+
+export function flag(d: number, style: FlagStyle = 'se'): Layer {
   const [x, base, top, w, h] = [60, 318, 188, 44, 28];
   const s = d > 0 ? 1 : -1;
   const fp = (o: number): string =>
@@ -98,11 +100,25 @@ export function flag(d: number): Layer {
     `L${x + (2 + w) * s},${top + 2 + h} C${x + (2 + w * 0.65) * s},${top + 2 + h + o} ${x + (2 + w * 0.35) * s},${top + 2 + h - o} ${x + 2 * s},${top + 2 + h} Z`;
   const anim = `<animate attributeName="d" values="${fp(4)};${fp(-4)};${fp(4)}" dur="2.2s" repeatCount="indefinite"/>`;
   const xl = s > 0 ? x : x - (w + 8);
-  const crossV = `<rect x="${f1(x + (2 + w * 0.32) * s - (s > 0 ? 0 : w * 0.14))}" y="${top}" width="${f1(w * 0.14)}" height="${h + 6}" fill="#fecc02"/>`;
-  const crossH = `<rect x="${xl}" y="${f1(top + 2 + h * 0.42)}" width="${w + 8}" height="${f1(h * 0.18)}" fill="#fecc02"/>`;
+  let cloth: string;
+  if (style === 'us') {
+    // thirteen stripes and a blue canton with stars at the hoist (next to the pole)
+    const sh = h / 13;
+    cloth = `<rect x="${xl}" y="${top - 6}" width="${w + 8}" height="${h + 14}" fill="#b22234"/>` +
+      Array.from({ length: 6 }, (_, i) => `<rect x="${xl}" y="${f1(top + 2 + (2 * i + 1) * sh)}" width="${w + 8}" height="${f1(sh)}" fill="#ffffff"/>`).join('');
+    const cw = w * 0.42, cx = s > 0 ? x : x - cw - 2;
+    cloth += `<rect x="${f1(cx)}" y="${top - 6}" width="${f1(cw + 2)}" height="${f1(7 * sh + 8)}" fill="#3c3b6e"/>`;
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 5; c++) {
+      cloth += `<circle cx="${f1(cx + 3 + c * (cw - 3) / 5 + (r % 2) * 1.6)}" cy="${f1(top + 4 + r * 3.4)}" r=".8" fill="#fff"/>`;
+    }
+  } else {
+    const crossV = `<rect x="${f1(x + (2 + w * 0.32) * s - (s > 0 ? 0 : w * 0.14))}" y="${top}" width="${f1(w * 0.14)}" height="${h + 6}" fill="#fecc02"/>`;
+    const crossH = `<rect x="${xl}" y="${f1(top + 2 + h * 0.42)}" width="${w + 8}" height="${f1(h * 0.18)}" fill="#fecc02"/>`;
+    cloth = `<rect x="${xl}" y="${top - 6}" width="${w + 8}" height="${h + 14}" fill="#006aa7"/>${crossV}${crossH}`;
+  }
   return layer(`<rect x="${x - 1.5}" y="${top - 6}" width="3" height="${base - top + 6}" fill="#e8ecef"/><circle cx="${x}" cy="${top - 7}" r="3" fill="#e8c34a"/>` +
     `<clipPath id="fl"><path d="${fp(4)}">${anim}</path></clipPath>` +
-    `<g clip-path="url(#fl)"><rect x="${xl}" y="${top - 6}" width="${w + 8}" height="${h + 14}" fill="#006aa7"/>${crossV}${crossH}</g>`);
+    `<g clip-path="url(#fl)">${cloth}</g>`);
 }
 
 /** The clothesline: laundry left in the machine. */
@@ -169,6 +185,14 @@ function treatLayer(name: string): string | null {
           `<g transform="translate(${P + dx},${305 + Math.abs(dx) * 0.3})">` +
           [0, 1.26, 2.51, 3.77, 5.03].map((a) => `<circle cx="${f1(3 * Math.cos(a))}" cy="${f1(3 * Math.sin(a))}" r="2.4" fill="${col}"/>`).join('') +
           '<circle r="1.6" fill="#ffd23f"/></g>').join(''));
+    case 'pie':
+      return (plate(P, 338) + `<path d="M${P - 12},336 L${P - 10},331 L${P + 10},331 L${P + 12},336 Z" fill="#c98a4b"/>` +
+        `<ellipse cx="${P}" cy="331" rx="10" ry="3" fill="#d2722a"/><ellipse cx="${P}" cy="331" rx="10" ry="3" fill="none" stroke="#e0a660" stroke-width="1.6"/>` +
+        `<path d="M${P - 3},329 q3,-5 6,0 Z" fill="#fffaf0"/>`);
+    case 'shamrock':
+      return (`<path d="M${P - 6},338 L${P - 8},328 L${P + 8},328 L${P + 6},338 Z" fill="#c98a4b"/>` +
+        ([[-6, 318], [0, 314], [6, 319]] as const).map(([dx, y]) => `<path d="M${P},328 Q${P + dx * 0.5},${(328 + y) / 2} ${P + dx},${y + 3}" stroke="#2f8a46" stroke-width="1.2" fill="none"/>` +
+          `<g transform="translate(${P + dx},${y})" fill="#3fae5a"><circle cx="-2" cy="-1" r="2.2"/><circle cx="2" cy="-1" r="2.2"/><circle cx="0" cy="-3.4" r="2.2"/></g>`).join(''));
     case 'cake':
       return (plate(P, 338) + `<path d="M${P - 13},336 L${P - 13},329 Q${P},312 ${P + 13},329 L${P + 13},336 Z" fill="#7cc48a"/><path d="M${P - 13},329 Q${P},312 ${P + 13},329" stroke="#9edba9" stroke-width="1.2" fill="none"/>` +
         `<circle cx="${P}" cy="319" r="3" fill="#ff8fb3"/><path d="M${P - 2},318 q2,-3 4,0" stroke="#e05a8a" fill="none"/><path d="M${P - 4},321 l-3,1 M${P + 4},321 l3,1" stroke="#3f8f3f" stroke-width="1.2"/>`);
@@ -197,7 +221,7 @@ export function bonfire(x = 175, base = 362): Layer {
   return layer(b.join(''), grad('vg', '#ff9a3c', 0.55));
 }
 
-function bunting(pts: [number, number][], size = 9): string {
+function bunting(pts: [number, number][], colors: string[], size = 9): string {
   const out: string[] = [];
   for (let k = 0; k < pts.length - 1; k++) {
     const [x1, y1] = pts[k], [x2, y2] = pts[k + 1];
@@ -205,7 +229,7 @@ function bunting(pts: [number, number][], size = 9): string {
     for (let j = 0; j < n; j++) {
       const t = (j + 0.5) / n;
       const x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t + 2;
-      const col = out.length % 2 === 0 ? '#006aa7' : '#fecc02';
+      const col = colors[out.length % colors.length];
       out.push(`<polygon points="${f1(x - size / 2)},${f1(y)} ${f1(x + size / 2)},${f1(y)} ${f1(x)},${f1(y + size * 1.1)}" fill="${col}">` +
         `<animateTransform attributeName="transform" type="rotate" values="-6 ${f1(x)} ${f1(y)};6 ${f1(x)} ${f1(y)};-6 ${f1(x)} ${f1(y)}" dur="${f1(1.8 + (out.length % 3) * 0.3)}s" repeatCount="indefinite"/></polygon>`);
     }
@@ -214,8 +238,14 @@ function bunting(pts: [number, number][], size = 9): string {
   return `<path d="${wire}" stroke="#eee" stroke-width=".8"/>` + out.join('');
 }
 
-/** National day: blue and yellow bunting along the eaves. */
-export const pennants = (M: HouseModel): Layer => layer(inHouse(M, M.eaves.map((e) => bunting(e)).join('')));
+export const BUNTING: Record<string, string[]> = {
+  se: ['#006aa7', '#fecc02'], // Swedish national day
+  us: ['#b22234', '#ffffff', '#3c3b6e'], // the Fourth of July
+  irish: ['#169b62', '#ffffff', '#ff883e'], // St. Patrick's Day
+};
+
+/** Bunting along the eaves in the given colours. */
+export const pennants = (M: HouseModel, colors: string[] = BUNTING.se): Layer => layer(inHouse(M, M.eaves.map((e) => bunting(e, colors)).join('')));
 
 function lantern(x: number, y: number): string {
   return `<line x1="${x}" y1="${y - 12}" x2="${x}" y2="${y - 8}" stroke="#333" stroke-width=".8"/>` +
@@ -308,8 +338,8 @@ export const fireworks = (): Layer => layer(burst(140, 80, '#ff5a6e', 0) + burst
   burst(720, 120, '#b06bff', 0.7) + burst(440, 95, '#7dff8a', 3.0) + burst(220, 140, '#ffa04d', 2.6));
 
 /** The mailbox flag is up (something in the calendar today). */
-export function mailboxFlag(): Layer {
-  const [mx, mb] = MAILBOX;
+export function mailboxFlag(M: HouseModel): Layer {
+  const [mx, mb] = M.mailbox;
   return layer(`<g><rect x="${mx + 6}" y="${mb - 42}" width="2" height="12" fill="#3a3f44"/><path d="M${mx + 8},${mb - 42} L${mx + 16},${mb - 39} L${mx + 8},${mb - 36} Z" fill="#e05a5a"/>` +
     `<animateTransform attributeName="transform" type="rotate" values="-3 ${mx + 7} ${mb - 30};3 ${mx + 7} ${mb - 30};-3 ${mx + 7} ${mb - 30}" dur="2.5s" repeatCount="indefinite"/></g>`);
 }

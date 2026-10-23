@@ -32,7 +32,10 @@ export function buildCached(s: Spec): Layer {
 
 const ORB = ['sunny', 'clear-night', 'partlycloudy', 'windy'];
 const NIGHT_CLEAR = ['clear-night', 'sunny', 'partlycloudy', 'windy'];
-const TREATS: Record<string, string> = { shrove_tuesday: 'semla', waffle_day: 'waffle', cinnamon_bun_day: 'bun', mothers_day: 'flowers', fathers_day: 'cake' };
+const TREATS: Record<string, string> = {
+  shrove_tuesday: 'semla', waffle_day: 'waffle', cinnamon_bun_day: 'bun', mothers_day: 'flowers', fathers_day: 'cake', thanksgiving: 'pie', st_patricks: 'shamrock',
+};
+const BUNTING_FOR: Record<string, string> = { national_day: 'se', independence_day: 'us', st_patricks: 'irish' };
 
 export function compose(s: Scene, M: HouseModel, colors: HouseColors = {}): Spec[] {
   const out: Spec[] = [];
@@ -99,23 +102,24 @@ export function compose(s: Scene, M: HouseModel, colors: HouseColors = {}): Spec
   if (s.smoke > 0) add('smoke', `${s.smoke}-${d}`, () => Hm.smoke(M, s.smoke, d));
   for (const spot of s.music) when(!!M.spots[spot], `notes-${spot}`, () => Hm.music(M, spot));
   when(s.porchLight, 'porch-light', () => Hm.porchLamp(M));
-  when(DARK_PHASES.includes(s.light), 'street-lamp', Hm.streetLamp);
+  when(DARK_PHASES.includes(s.light), 'street-lamp', () => Hm.streetLamp(M));
   when(s.advent, 'advent', () => F.advent(M));
-  when(s.holiday === 'national_day', 'pennants', () => F.pennants(M));
+  const bunting = BUNTING_FOR[s.holiday];
+  if (bunting) add('pennants', bunting, () => F.pennants(M, F.BUNTING[bunting]));
   // 6. the garden and holidays
-  when(s.calendarToday, 'mailbox', F.mailboxFlag);
+  when(s.calendarToday, 'mailbox', () => F.mailboxFlag(M));
   when(s.halloween, 'pumpkins', () => F.pumpkins(M));
-  when(s.easter, 'easter-twigs', () => F.easterTwigs(M));
+  when(s.easter && s.country === 'se', 'easter-twigs', () => F.easterTwigs(M));
   when(s.easter, 'easter-eggs', F.easterEggs);
   when(s.holiday === 'walpurgis', 'bonfire', () => F.bonfire());
   when(s.christmas, 'christmas-tree', () => F.christmasTree());
   when(s.midsummer, 'maypole', () => F.maypole());
-  if (s.flagDay || s.holiday === 'name_day' || (s.birthday && day)) add('flag', `${d}`, () => F.flag(d));
+  if (s.flagDay || s.holiday === 'name_day' || (s.birthday && day)) add('flag', `${s.flagStyle}-${d}`, () => F.flag(d, s.flagStyle));
   when(s.holiday === 'crayfish_party', 'crayfish-party', () => F.crayfishParty(M));
   when(s.holiday === 'martinmas', 'goose', F.goose);
   if (TREATS[s.holiday]) add('treat', TREATS[s.holiday], () => F.treat(M, TREATS[s.holiday]));
   when(s.holiday === 'name_day', 'name-day', () => F.nameDay(M));
-  when(s.holiday === 'christmas_eve', 'santa', () => F.santa(M));
+  when(s.holiday === 'christmas_eve' || s.holiday === 'christmas_day', 'santa', () => F.santa(M));
   when(s.holiday === 'lucia', 'lucia', () => F.lucia(M));
   when(s.birthday, 'balloons', () => F.balloons(M));
   when(s.laundry, 'clothesline', F.clothesline);
@@ -126,7 +130,7 @@ export function compose(s: Scene, M: HouseModel, colors: HouseColors = {}): Spec
     const x = M.people.x + p.index * M.people.step;
     const lookKey = JSON.stringify(p.look);
     if (!s.nightDim) add(`person-${p.index}`, `${s.clothes}-${x}-${lookKey}`, () => Hm.person(M, p.look, x, s.clothes));
-    else if (s.windows.front && p.index < M.silhouettes.length) add(`silhouette-${p.index}`, `${lookKey}`, () => Hm.silhouette(M, M.silhouettes[p.index], p.look.longHair));
+    else if (p.index < M.silhouettes.length && s.windows[M.silhouettes[p.index][0]]) add(`silhouette-${p.index}`, `${lookKey}`, () => Hm.silhouette(M, M.silhouettes[p.index], p.look.longHair));
   }
   if (s.wind > 9.9) add('wind', `${d}`, () => Wx.wind(d));
   // night mode: dim everything

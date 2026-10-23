@@ -211,8 +211,8 @@ export class LivingHouseCard extends LitElement {
       }
     }
     if (cfg.power) hits.push({ entity: cfg.power, title: t.chimney, tap: tapOf(cfg.tap?.chimney, { action: 'more-info' }), shape: box(M.chimney[0], M.chimney[1] + 20, 32) });
-    if (cfg.tap?.street_lamp) hits.push({ entity: cfg.tap.street_lamp, title: t.lamp, tap: tapOf(cfg.tap.street_lamp, { action: 'more-info' }), shape: box(250, 264, 24, false) });
-    if (cfg.calendar) hits.push({ entity: cfg.calendar, title: t.mailbox, tap: tapOf(cfg.tap?.mailbox, { action: 'more-info' }), shape: box(588, 326, 28, false) });
+    if (cfg.tap?.street_lamp) hits.push({ entity: cfg.tap.street_lamp, title: t.lamp, tap: tapOf(cfg.tap.street_lamp, { action: 'more-info' }), shape: box(M.lamp[0], M.lamp[1] - 80, 24, false) });
+    if (cfg.calendar) hits.push({ entity: cfg.calendar, title: t.mailbox, tap: tapOf(cfg.tap?.mailbox, { action: 'more-info' }), shape: box(M.mailbox[0], M.mailbox[1] - 26, 28, false) });
     for (const p of scene.people) {
       if (p.home && !scene.nightDim) hits.push({ entity: p.entity, title: t.home(p.name), tap: { action: 'more-info' }, shape: box(M.people.x + p.index * M.people.step, M.people.base - 17, 24) });
     }

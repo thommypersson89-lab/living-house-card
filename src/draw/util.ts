@@ -74,8 +74,6 @@ export function seedOf(s: string): number {
 }
 
 // the landscape (the same for every house model)
-export const LAMP: Point = [250, 344]; // street lamp foot
-export const MAILBOX: Point = [588, 352];
 export const GROUND = `M0,318 C180,296 300,300 400,302 C520,304 640,294 ${W},312 L${W},${H} L0,${H} Z`;
 export const TREES: [number, number, number, number][] = [
   [150, 322, 92, 0],

@@ -12,7 +12,7 @@ const SCHEMA = [
   {
     type: 'grid', name: '', schema: [
       { name: 'house', selector: select(Object.values(MODELS).map((m) => [m.id, m.name])) },
-      { name: 'country', selector: select([['se', 'Sweden'], ['none', 'No holidays']]) },
+      { name: 'country', selector: select([['se', 'Sweden'], ['us', 'United States'], ['none', 'No holidays']]) },
       { name: 'language', selector: select([['en', 'English'], ['sv', 'Svenska']]) },
     ],
   },

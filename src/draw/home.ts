@@ -2,7 +2,7 @@
 // window glints, figures, silhouettes, frost and snow on the roof. Everything is placed from the
 // house model's anchors.
 import type { HouseModel, Pane } from '../model/types';
-import { H, LAMP, Layer, Rng, W, f0, f1, f2, grad, houseMask, inHouse, layer, shade } from './util';
+import { H, Layer, Rng, W, f0, f1, f2, grad, houseMask, inHouse, layer, shade } from './util';
 
 export const LAMP_COLORS: Record<string, string> = {
   warm: '#ffc46b', neutral: '#ffe3a6', cool: '#eaf3ff', red: '#ff5a4f', orange: '#ff9a3c',
@@ -97,8 +97,8 @@ export function porchLamp(M: HouseModel): Layer {
     `<ellipse cx="${px - 12}" cy="${M.people.base - 3}" rx="22" ry="5" fill="#ffd27a" opacity=".2"/>`), grad('dg', '#ffd27a', 0.7));
 }
 
-export function streetLamp(): Layer {
-  const [lx, lb] = LAMP;
+export function streetLamp(M: HouseModel): Layer {
+  const [lx, lb] = M.lamp;
   return layer(`<path d="M${lx - 4},${lb - 80} L${lx - 40},${lb + 6} L${lx + 40},${lb + 6} L${lx + 4},${lb - 80} Z" fill="url(#lc)"/>` +
     `<circle cx="${lx}" cy="${lb - 82}" r="22" fill="url(#lg2)"/><rect x="${lx - 4.5}" y="${lb - 86}" width="9" height="8" fill="#fff1c2"/>`,
   grad('lg2', '#ffe7a0', 0.8) + '<linearGradient id="lc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a0" stop-opacity=".35"/><stop offset="1" stop-color="#ffe7a0" stop-opacity="0"/></linearGradient>');
@@ -134,7 +134,8 @@ export function glint(M: HouseModel, side: 'side' | 'front'): Layer {
 
 /** Friday night in: a popcorn bowl and lit candles in the first front window. */
 export function fridayCosy(M: HouseModel): Layer {
-  const { x: fx, y: fy } = M.windows.front[0];
+  const [win, pane] = M.deco.cosy;
+  const { x: fx, y: fy } = M.windows[win][pane];
   const pop = [[0, 0], [2.5, -1.2], [5, 0], [1.2, -2.4], [3.8, -2.6], [6.5, -1]]
     .map(([dx, dy]) => `<circle cx="${fx + 6 + dx}" cy="${fy + 16 + dy}" r="1.6" fill="#fff6d8"/>`).join('');
   const cand = [17, 21].map((cx) => `<rect x="${fx + cx - 0.8}" y="${fy + 14}" width="1.6" height="6" fill="#f4efe0"/><ellipse cx="${fx + cx}" cy="${fy + 12.5}" rx="1" ry="1.8" fill="#ffd65a">` +
@@ -233,8 +234,9 @@ export function person(M: HouseModel, L: PersonLook, x: number, clothes: Clothes
 }
 
 /** At night people are inside, seen as silhouettes in a lit front window. */
-export function silhouette(M: HouseModel, pane: number, longHair: boolean): Layer {
-  const { x: wx, y: wy } = M.windows.front[pane];
+export function silhouette(M: HouseModel, which: [string, number], longHair: boolean): Layer {
+  const [win, pane] = which;
+  const { x: wx, y: wy } = M.windows[win][pane];
   const x = wx + 13, y = wy + 9;
   const hair = longHair ? `<path d="M${x - 4.8},${y - 3} Q${x},${y - 11} ${x + 4.8},${y - 3} L${x + 5.2},${y + 5} L${x - 5.2},${y + 5} Z"/>`
     : `<path d="M${x - 4.6},${y - 2} Q${x},${y - 10} ${x + 4.6},${y - 2} Z"/>`;
