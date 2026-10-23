@@ -261,7 +261,8 @@ function gallery(): void {
     a.href = `?scene=${name}`;
     a.textContent = name.replace(/_/g, ' ');
     cap.append(a);
-    fig.append(card({ ...TEST_CONFIG, ...scene.config }, scene.states, scene.now), cap);
+    // gallery pictures stand still, so forty of them don't weigh down a phone
+    fig.append(card({ ...TEST_CONFIG, ...scene.config, motion: { when_home: ['person.nobody'] } }, scene.states, scene.now), cap);
     g.append(fig);
   }
 }
