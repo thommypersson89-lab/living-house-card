@@ -160,7 +160,7 @@ export function derive(hass: Hass, cfg: LivingHouseConfig, opt: DeriveOptions = 
   };
 
   const sun = S['sun.sun'];
-  const lat = hass.config?.latitude ?? 55.6, lon = hass.config?.longitude ?? 13.0;
+  const lat = hass.config?.latitude ?? 59.33, lon = hass.config?.longitude ?? 18.07;
   const elev = num(sun?.attributes.elevation, -90);
   const az = num(sun?.attributes.azimuth, 180);
   const rising = !!sun?.attributes.rising;

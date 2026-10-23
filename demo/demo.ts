@@ -9,7 +9,7 @@ import { MODELS, modelFor } from '../src/model';
 import type { Hass, HassEntity } from '../src/derive';
 import { SCENES, TEST_CONFIG, houseConfig } from '../tests/scenes';
 
-const LAT = 55.6, LON = 13.0; // southern Sweden
+const LAT = 59.33, LON = 18.07; // Stockholm
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
 const s = (state: string, attributes: Record<string, unknown> = {}): HassEntity => ({ state, attributes });
 
@@ -24,7 +24,7 @@ function card(config: LivingHouseConfig, states: Record<string, HassEntity>, now
 // ---- the time machine and the configurator ----
 interface PersonRow { name: string; entity: string; jacket: string; hair: string; longHair: boolean; home: boolean }
 
-const PLACES: Record<string, [number, number]> = { se: [55.6, 13.0], us: [40.7, -74.0], none: [51.5, -0.1] };
+const PLACES: Record<string, [number, number]> = { se: [59.33, 18.07], us: [40.7, -74.0], none: [51.5, -0.1] };
 
 /** A tiny YAML writer for the generated card configuration. */
 function toYaml(v: unknown, indent = ''): string {

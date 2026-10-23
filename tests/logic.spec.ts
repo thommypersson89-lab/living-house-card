@@ -66,10 +66,10 @@ test('window colours', () => {
 });
 
 test('sun, moon and seasons', () => {
-  // southern Sweden at 13:10 local time on midsummer day: the sun high in the south
-  const s = sunPosition(new Date(Date.UTC(2026, 5, 21, 11, 10)), 55.6, 13.0);
-  expect(s.elevation).toBeGreaterThan(55);
-  expect(s.elevation).toBeLessThan(59);
+  // Stockholm at solar noon on midsummer day: the sun high in the south (90 - 59.33 + 23.44 = 54.1)
+  const s = sunPosition(new Date(Date.UTC(2026, 5, 21, 10, 50)), 59.33, 18.07);
+  expect(s.elevation).toBeGreaterThan(53);
+  expect(s.elevation).toBeLessThan(55.5);
   expect(Math.abs(s.azimuth - 180)).toBeLessThan(8);
   expect(ageToPhase(moonAge(new Date(Date.UTC(2026, 0, 3, 10))))).toBe('full_moon'); // full moon 3 Jan 2026
   expect(seasonOf(new Date(2026, 6, 1), 55)).toBe('summer');

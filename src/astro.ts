@@ -64,7 +64,7 @@ export const phaseToAge = (phase: string): number | undefined => {
 export const ageToPhase = (age: number): string => PHASES[Math.round((age / SYNODIC) * 8) % 8];
 
 /** Astronomical season like Home Assistant's season sensor (approximate dates are enough for the picture). */
-export function seasonOf(date: Date, latitude = 55.6): 'spring' | 'summer' | 'autumn' | 'winter' {
+export function seasonOf(date: Date, latitude = 59.33): 'spring' | 'summer' | 'autumn' | 'winter' {
   const md = (date.getMonth() + 1) * 100 + date.getDate();
   const north = md >= 320 && md < 621 ? 'spring' : md >= 621 && md < 923 ? 'summer' : md >= 923 && md < 1221 ? 'autumn' : 'winter';
   if (latitude >= 0) return north;
